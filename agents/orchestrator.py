@@ -72,6 +72,23 @@ class MultiAgentOrchestrator:
         Returns:
             AgentType indicating which agent should handle the query
         """
+        # Simple keyword-based routing for common patterns
+        question_lower = user_question.lower()
+        
+        # Database keywords that should definitely route to SQL Agent
+        sql_keywords = [
+            'show', 'list', 'get', 'find', 'display', 'retrieve',
+            'product', 'order', 'customer', 'employee', 'supplier', 'category',
+            'sales', 'inventory', 'shipper', 'count', 'how many',
+            'top', 'most', 'least', 'highest', 'lowest', 'average',
+            'select', 'query', 'database', 'table', 'record'
+        ]
+        
+        # Check if any SQL keywords are present
+        if any(keyword in question_lower for keyword in sql_keywords):
+            print(f"🎯 Keyword match: Routing to SQL Agent (found database-related terms)")
+            return AgentType.SQL
+        
         # Build context from recent conversation
         recent_context = ""
         if conversation_context:
@@ -85,18 +102,35 @@ class MultiAgentOrchestrator:
 Your job is to analyze the user's question and determine which specialized agent should handle it.
 
 Available agents:
-1. SQL Agent - Handles database queries about:
-   - Product information, orders, customers
-   - Sales data, inventory, business metrics
-   - Any question requiring database access
-   - Tables in the database: Products, Orders, Customers, Categories, Suppliers, etc.
+1. SQL Agent - Use this for ANY question about data, records, or information that would be stored in a database:
+   - "show me products", "list orders", "get customers", "find suppliers"
+   - "how many X", "what are the top X", "which X have Y"
+   - Product information, orders, customers, employees, categories, suppliers
+   - Sales data, inventory, business metrics, statistics from database
+   - ANY question asking to retrieve, count, list, show, or analyze data
+   - Tables available: Products, Orders, Customers, Categories, Suppliers, Employees, OrderDetails, Shippers
 
-2. General Agent - Handles everything else:
-   - General knowledge questions
-   - Web searches and current information
-   - Conversations and explanations
-   - Document analysis
-   - Questions not related to the database
+2. General Agent - ONLY use this for questions NOT about database data:
+   - General knowledge: "What is machine learning?", "Explain SQL"
+   - Current events and web searches
+   - Conceptual questions: "What are best practices for X?"
+   - Conversations and explanations about topics
+   - Document analysis (non-database)
+
+**CRITICAL ROUTING RULES - FOLLOW EXACTLY:**
+- ANY variation of "show/list/get/display products/orders/customers" → SQL Agent
+- "show me all products" → SQL Agent
+- "list products" → SQL Agent  
+- "get customers" → SQL Agent
+- Questions containing words: products, orders, customers, sales, inventory, employees → SQL Agent
+- Questions asking "how many", "what are", "which", "top X" about data → SQL Agent
+- ONLY route to General Agent if question is purely conceptual with no data retrieval
+
+**EXAMPLES:**
+- "show me all products" → {{"agent": "sql", "confidence": 1.0, "reasoning": "Requests product data from database"}}
+- "list orders" → {{"agent": "sql", "confidence": 1.0, "reasoning": "Requests order data from database"}}
+- "what is SQL" → {{"agent": "general", "confidence": 1.0, "reasoning": "Conceptual question about SQL language"}}
+- "how many customers" → {{"agent": "sql", "confidence": 1.0, "reasoning": "Count query on database"}}
 
 Analyze the user's question and respond with ONLY a JSON object in this format:
 {{
@@ -121,7 +155,7 @@ Database schema information:
                     ChatMessage(role=Role.SYSTEM, text=system_prompt),
                     ChatMessage(role=Role.USER, text=user_prompt)
                 ],
-                temperature=0.1,
+                temperature=0.0,  # Use 0 for fully deterministic routing
                 json_output=True
             )
             

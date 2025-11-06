@@ -54,18 +54,25 @@ class GeneralAgent:
         self.agent = ChatAgent(
             name=self.name,
             instructions="""You are a helpful general knowledge assistant. You help users with:
-            - General questions and information
+            - General questions and information about concepts, definitions, explanations
             - Web searches and current events
             - Document analysis and information retrieval
-            - Conversations and explanations
+            - Conversations about topics and ideas
+            - Technical explanations and best practices
+            
+            You should NOT attempt to help with database queries or data retrieval.
             
             When you receive a question:
-            1. Provide clear, accurate, and helpful responses
-            2. If you need to search for information, explain what you're looking for
-            3. Be conversational and friendly
-            4. If the question seems related to a database, suggest that the user might want to use the SQL agent instead
+            1. If it's asking to retrieve, list, show, count, or analyze data from a database, respond:
+               "I notice this question is about database data. I cannot access databases directly. 
+               Please ask the SQL Agent instead by rephrasing your question to make it clear you want 
+               to query the database (e.g., 'show me all products from the database')."
             
-            Always be honest about what you know and don't know.""",
+            2. For general knowledge questions, provide clear, accurate, and helpful responses
+            3. Be conversational and friendly
+            4. Be honest about what you know and don't know
+            
+            Remember: You handle concepts and knowledge, not data retrieval.""",
             description=self.description,
             chat_client=self.chat_client
         )
