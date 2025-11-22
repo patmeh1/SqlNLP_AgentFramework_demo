@@ -50,6 +50,20 @@
             opacity: 0.9;
         }
 
+        .memory-indicator {
+            font-size: 12px;
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .memory-indicator::before {
+            content: '🧠';
+            margin-right: 5px;
+        }
+
         .chat-container {
             flex: 1;
             overflow-y: auto;
@@ -153,6 +167,103 @@
             margin-top: 10px;
             padding-top: 10px;
             border-top: 1px solid #e0e0e0;
+        }
+
+        .response-section {
+            margin: 15px 0;
+        }
+
+        .response-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .response-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #444;
+            word-wrap: break-word;
+        }
+
+        .response-content ul, .response-content ol {
+            margin-left: 20px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        .response-content li {
+            margin: 5px 0;
+        }
+
+        .response-content strong {
+            color: #222;
+            font-weight: 600;
+        }
+
+        .response-content em {
+            color: #666;
+        }
+
+        .sql-section {
+            margin-top: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f9f9f9;
+        }
+
+        .sql-toggle-btn {
+            width: 100%;
+            padding: 12px 15px;
+            background: #f5f5f5;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 500;
+            color: #666;
+            transition: background-color 0.2s;
+        }
+
+        .sql-toggle-btn:hover {
+            background: #eee;
+        }
+
+        .sql-toggle-btn .toggle-icon {
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .sql-toggle-btn.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .sql-content {
+            display: none;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .sql-content.visible {
+            display: block;
+        }
+
+        .data-label {
+            font-size: 12px;
+            color: #666;
+            margin: 10px 0 8px 0;
+            font-weight: 500;
         }
 
         .input-container {
@@ -296,21 +407,43 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🤖 SQL Agent - Natural Language Database Query</h1>
-            <p>Ask questions about the Northwind database in plain English</p>
+            <h1>🏥 Medical Data Query System - Natural Language Interface</h1>
+            <p>Ask questions about medical data in plain English - the system automatically routes to the right agents</p>
+            <div class="memory-indicator">🧠 Intelligent routing enabled • Conversation memory enabled • Follow-up questions supported</div>
         </div>
 
         <div class="chat-container" id="chatContainer">
             <div class="sample-questions">
-                <h3>📌 Try these sample questions:</h3>
+                <h3>📌 Try these medical queries (like real users will ask):</h3>
                 <ul>
-                    <li onclick="askQuestion('Show me all products')">• Show me all products</li>
-                    <li onclick="askQuestion('What are the top 5 most expensive products?')">• What are the top 5 most expensive products?</li>
-                    <li onclick="askQuestion('How many customers do we have in each country?')">• How many customers do we have in each country?</li>
-                    <li onclick="askQuestion('Which employees have the most orders?')">• Which employees have the most orders?</li>
-                    <li onclick="askQuestion('Show me orders from customers in Germany')">• Show me orders from customers in Germany</li>
-                    <li onclick="askQuestion('What is the total revenue by category?')">• What is the total revenue by category?</li>
+                    <li onclick="askQuestion('Can you provide a list of all Pt-Problems (patient problems) by name for all Tests that have LOINC code 2947-0, and also provide the SNOMED code for each of those patient problems?')">
+                        • <strong>Complex:</strong> Pt-Problems for LOINC 2947-0 with SNOMED codes
+                    </li>
+                    <li onclick="askQuestion('What LOINC codes are available in the database? Show me a few examples.')">
+                        • <strong>Data Retrieval:</strong> Available LOINC codes
+                    </li>
+                    <li onclick="askQuestion('What patient problems are indicated by tests with LOINC code 2947-0?')">
+                        • <strong>Relationship:</strong> Patient problems for LOINC code
+                    </li>
                 </ul>
+                
+                <h3 style="margin-top: 15px;">💡 More Examples:</h3>
+                <ul>
+                    <li onclick="askQuestion('For patient problems 19928 and 3668, what are their SNOMED codes and names?')">
+                        • <strong>Lookup:</strong> SNOMED codes for patient problems
+                    </li>
+                    <li onclick="askQuestion('What does LOINC code 2947-0 represent?')">
+                        • <strong>Knowledge:</strong> LOINC code meaning
+                    </li>
+                    <li onclick="askQuestion('How many tests have LOINC code 2947-0?')">
+                        • <strong>Aggregation:</strong> Count tests by LOINC code
+                    </li>
+                </ul>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-size: 13px; color: #1565c0;">
+                    <strong>ℹ️ How it works:</strong> Just ask your question naturally. The system automatically analyzes your query 
+                    and routes it to the most appropriate agents. No need to specify which agent to use!
+                </div>
             </div>
         </div>
 
@@ -378,6 +511,12 @@
             return html;
         }
 
+        function toggleSqlDetails(button) {
+            const content = button.nextElementSibling;
+            button.classList.toggle('expanded');
+            content.classList.toggle('visible');
+        }
+
         async function sendMessage() {
             const question = userInput.value.trim();
             if (!question) return;
@@ -403,14 +542,92 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    let agentResponse = `<strong>${data.response}</strong>`;
+                    // Create agent badge based on routing
+                    let agentBadge = '';
                     
-                    if (data.sql) {
-                        agentResponse += `<div class="sql-query">${data.sql}</div>`;
+                    if (data.auto_routing) {
+                        // Show intelligent routing information
+                        const primaryAgent = data.agents_involved?.primary || 'System';
+                        const secondaryAgent = data.agents_involved?.secondary;
+                        const complexity = data.query_complexity || 'standard';
+                        const confidence = Math.round((data.routing_confidence || 0) * 100);
+                        
+                        let agentFlow = primaryAgent;
+                        if (secondaryAgent) {
+                            agentFlow += ` → ${secondaryAgent}`;
+                        }
+                        
+                        let complexityColor = {
+                            'low': '#4caf50',
+                            'medium': '#ff9800',
+                            'high': '#f44336'
+                        }[complexity] || '#2196f3';
+                        
+                        agentBadge = `<div style="margin: 8px 0; font-size: 12px;">
+                            <span style="background: #2196f3; color: white; padding: 3px 8px; border-radius: 10px; margin-right: 8px;">✓ Auto-Routed</span>
+                            <span style="background: #555; color: white; padding: 3px 8px; border-radius: 10px; margin-right: 8px;">${agentFlow}</span>
+                            <span style="background: ${complexityColor}; color: white; padding: 3px 8px; border-radius: 10px; margin-right: 8px;">Complexity: ${complexity}</span>
+                            <span style="background: #9c27b0; color: white; padding: 3px 8px; border-radius: 10px;">Confidence: ${confidence}%</span>
+                        </div>`;
+                    } else if (data.agent_used && data.agent_used.includes('Error Recovery')) {
+                        agentBadge = '<span style="background: #ff9800; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; margin-left: 10px;">🔄 Error Recovery</span>';
+                    } else if (data.agent_type === 'sql') {
+                        agentBadge = '<span style="background: #4caf50; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; margin-left: 10px;">📊 SQL Agent</span>';
+                    } else {
+                        agentBadge = '<span style="background: #2196f3; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; margin-left: 10px;">🌐 General Agent</span>';
                     }
                     
-                    if (data.results && data.results.length > 0) {
-                        agentResponse += formatResults(data.results);
+                    // Use formatted response if available, otherwise use plain text
+                    let agentResponse = `<div class="response-section">
+                        <div class="response-title">
+                            ${agentBadge}
+                        </div>
+                        <div class="response-content">`;
+                    
+                    // Add formatted HTML response if available
+                    if (data.response_formatted && data.response_html) {
+                        agentResponse += data.response_html;
+                    } else {
+                        agentResponse += `<p>${data.response}</p>`;
+                    }
+                    
+                    agentResponse += `</div>
+                    </div>`;
+                    
+                    // Add SQL and data details section if we have them
+                    if (data.sql || (data.results && data.results.length > 0)) {
+                        let rowCountText = '';
+                        if (data.results && data.results.length > 0) {
+                            rowCountText = ` • ${data.results.length} row${data.results.length !== 1 ? 's' : ''} returned`;
+                        }
+                        
+                        agentResponse += `
+                        <div class="sql-section">
+                            <button class="sql-toggle-btn" onclick="toggleSqlDetails(this)">
+                                <span><span class="toggle-icon">▼</span> View SQL Query & Data${rowCountText}</span>
+                            </button>
+                            <div class="sql-content">`;
+                        
+                        if (data.sql) {
+                            agentResponse += `
+                                <div class="data-label">📝 SQL Query:</div>
+                                <div class="sql-query">${data.sql}</div>`;
+                        }
+                        
+                        if (data.results && data.results.length > 0) {
+                            agentResponse += `
+                                <div class="data-label" style="margin-top: 15px;">📊 Query Results:</div>
+                                ${formatResults(data.results)}`;
+                        }
+                        
+                        agentResponse += `
+                            </div>
+                        </div>`;
+                    }
+                    
+                    // Show original error if it was recovered
+                    if (data.original_error) {
+                        agentResponse += `<div class="error" style="margin-top: 10px; font-size: 12px;"><strong>Technical Error:</strong> ${data.original_error}</div>`;
                     }
                     
                     if (data.explanation) {
@@ -419,7 +636,12 @@
                     
                     addMessage(agentResponse, false);
                 } else {
-                    addMessage(`<div class="error">Error: ${data.error || 'Unknown error occurred'}</div>`, false);
+                    // For complete failures, show both error and any helpful explanation
+                    let errorResponse = `<div class="error">Error: ${data.error || 'Unknown error occurred'}</div>`;
+                    if (data.helpful_explanation) {
+                        errorResponse += `<div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ff9800; border-radius: 5px;"><strong>💡 Helpful Tip:</strong><br>${data.helpful_explanation}</div>`;
+                    }
+                    addMessage(errorResponse, false);
                 }
             } catch (error) {
                 addMessage(`<div class="error">Failed to connect to server: ${error.message}</div>`, false);
@@ -464,6 +686,10 @@
         // Focus input on load
         window.onload = () => {
             userInput.focus();
+            // Show sample questions on initial load
+            const sampleQuestions = document.querySelector('.sample-questions');
+            chatContainer.innerHTML = '';
+            chatContainer.appendChild(sampleQuestions);
         };
     </script>
 </body>

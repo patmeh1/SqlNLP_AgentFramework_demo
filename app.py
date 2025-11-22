@@ -1,7 +1,7 @@
 """
 Flask Web Application for Multi-Agent SQL Demo
-Provides a chat interface using Microsoft Agent Framework for intelligent routing.
-Routes queries to SQL Agent for database queries or General Agent for other questions.
+Provides a chat interface using Microsoft Agent Framework with intelligent automatic routing.
+Automatically selects appropriate agents (SQL/General) based on query analysis.
 """
 
 from flask import Flask, render_template, request, jsonify, session
@@ -9,9 +9,9 @@ from dotenv import load_dotenv
 import os
 import secrets
 import asyncio
-from sql_agent import create_agent_from_env
-from agents.sql_agent_wrapper import SQLAgentWrapper
-from agents.orchestrator import create_orchestrator_from_env
+from hybrid_agent_with_memory import create_hybrid_agent_from_env
+from response_formatter import ResponseFormatter, format_general_agent_response
+from query_router import create_query_processor
 from datetime import datetime
 
 # Load environment variables
@@ -20,31 +20,36 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32))
 
-# Store orchestrator instances per session
-orchestrators = {}
+# Store Hybrid agent instances per session
+hybrid_agents = {}
+
+# Initialize query processor for intelligent routing
+query_processor = create_query_processor()
 
 
 def get_orchestrator_for_session():
-    """Get or create an orchestrator instance for the current session."""
+    """Get or create a Hybrid Agent instance for the current session."""
     session_id = session.get('session_id')
     
     if not session_id:
         session_id = secrets.token_hex(16)
         session['session_id'] = session_id
     
-    if session_id not in orchestrators:
+    if session_id not in hybrid_agents:
         try:
-            # Create SQL agent
-            sql_agent = create_agent_from_env()
-            sql_agent_wrapper = SQLAgentWrapper(sql_agent)
-            
-            # Create orchestrator with both SQL and General agents
-            orchestrators[session_id] = create_orchestrator_from_env(sql_agent_wrapper)
+            # Create Hybrid Agent with SQL-to-General chaining and memory
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                hybrid_agents[session_id] = loop.run_until_complete(create_hybrid_agent_from_env())
+                print("✓ Hybrid Agent initialized with SQL→General chaining + Memory")
+            finally:
+                loop.close()
         except Exception as e:
-            print(f"Error creating orchestrator: {e}")
+            print(f"Error creating hybrid agent: {e}")
             return None
     
-    return orchestrators[session_id]
+    return hybrid_agents[session_id]
 
 
 @app.route('/')
@@ -55,11 +60,10 @@ def index():
 
 @app.route('/api/query', methods=['POST'])
 def query():
-    """Handle natural language queries from the frontend."""
+    """Handle natural language queries from the frontend with automatic agent routing."""
     try:
         data = request.get_json()
         user_question = data.get('question', '').strip()
-        force_agent = data.get('agent', None)  # Optional: force specific agent
         
         if not user_question:
             return jsonify({
@@ -67,46 +71,70 @@ def query():
                 'error': 'Please provide a question.'
             }), 400
         
-        # Get orchestrator for this session
-        orchestrator = get_orchestrator_for_session()
-        if not orchestrator:
+        # Step 1: Analyze query and determine optimal routing
+        routing_strategy = query_processor.get_processing_strategy(user_question)
+        print(f"\n[Query Analysis] Route: {routing_strategy['routing']}")
+        print(f"  - Agents: {routing_strategy['agents']['primary']}", end="")
+        if routing_strategy['agents']['secondary']:
+            print(f" + {routing_strategy['agents']['secondary']}")
+        else:
+            print()
+        print(f"  - Strategy: {routing_strategy['strategy']}")
+        print(f"  - Complexity: {routing_strategy['analysis']['complexity']}")
+        print(f"  - Confidence: {routing_strategy['analysis']['confidence']}")
+        
+        # Get Hybrid agent for this session
+        agent = get_orchestrator_for_session()
+        if not agent:
             return jsonify({
                 'success': False,
-                'error': 'Failed to initialize multi-agent system. Check your configuration.'
+                'error': 'Failed to initialize hybrid agent system. Check your configuration.'
             }), 500
         
-        # Process the query (async operation)
+        # Step 2: Process the query through the optimal agent chain
+        # The hybrid agent will internally determine whether to use SQL or General agent
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        
         try:
-            if force_agent:
-                result = loop.run_until_complete(
-                    orchestrator.query_with_agent_choice(user_question, force_agent)
-                )
-            else:
-                result = loop.run_until_complete(
-                    orchestrator.query(user_question)
-                )
+            result = loop.run_until_complete(agent.query(user_question))
         finally:
             loop.close()
         
-        # Format response
+        # Step 3: Format response with routing metadata
         response = {
             'success': result.get('success', False),
             'question': result.get('question', user_question),
-            'response': result.get('response', ''),
-            'agent_used': result.get('agent_used', 'Unknown'),
-            'agent_type': result.get('agent_type', 'unknown'),
-            'timestamp': datetime.now().isoformat()
+            'response': result.get('final_response', ''),
+            'agent_used': 'Intelligent Hybrid Agent',
+            'agent_type': 'auto_routed',
+            'routing_strategy': routing_strategy['routing'],
+            'agents_involved': routing_strategy['agents'],
+            'agent_chain': result.get('agent_chain', 'Hybrid Agent → Memory'),
+            'timestamp': result.get('timestamp', datetime.now().isoformat()),
+            'memory_size': result.get('memory_size', 0),
+            # Add routing details for transparency
+            'auto_routing': True,
+            'query_complexity': routing_strategy['analysis']['complexity'],
+            'routing_confidence': routing_strategy['analysis']['confidence']
         }
         
-        # Add SQL-specific fields if available
-        if 'sql' in result:
-            response['sql'] = result['sql']
-            response['explanation'] = result.get('explanation', '')
+        # Format the general agent response with proper HTML structure
+        if result.get('final_response'):
+            query_data = result.get('results', None)
+            formatted = format_general_agent_response(result['final_response'], query_data)
+            response['response_html'] = formatted['html']
+            response['response_formatted'] = True
+        
+        # Add SQL-specific fields if SQL was used
+        if 'sql_query' in result:
+            response['sql'] = result['sql_query']
+            response['sql_response'] = result.get('sql_response', '')
             response['results'] = result.get('results', None)
             response['row_count'] = result.get('row_count', 0)
+            response['columns'] = result.get('columns', [])
+            response['sql_used'] = True
+        else:
+            response['sql_used'] = False
         
         if not result.get('success', False):
             response['error'] = result.get('error', 'Unknown error occurred')
@@ -114,6 +142,8 @@ def query():
         return jsonify(response)
     
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'success': False,
             'error': f'Server error: {str(e)}'
@@ -124,17 +154,20 @@ def query():
 def get_history():
     """Get conversation history for the current session."""
     try:
-        orchestrator = get_orchestrator_for_session()
-        if not orchestrator:
+        agent = get_orchestrator_for_session()
+        if not agent:
             return jsonify({
                 'success': False,
                 'error': 'No active session'
             }), 404
         
-        history = orchestrator.get_conversation_history()
+        # Get memory summary
+        memory_summary = agent.get_memory_summary()
+        
         return jsonify({
             'success': True,
-            'history': history
+            'history': memory_summary['interactions'],
+            'total_interactions': memory_summary['total_interactions']
         })
     
     except Exception as e:
@@ -148,13 +181,13 @@ def get_history():
 def clear_history():
     """Clear conversation history for the current session."""
     try:
-        orchestrator = get_orchestrator_for_session()
-        if orchestrator:
-            orchestrator.clear_history()
+        agent = get_orchestrator_for_session()
+        if agent:
+            agent.clear_memory()
         
         return jsonify({
             'success': True,
-            'message': 'History cleared'
+            'message': 'History and memory cleared'
         })
     
     except Exception as e:
@@ -164,21 +197,88 @@ def clear_history():
         }), 500
 
 
-@app.route('/api/agents', methods=['GET'])
-def get_agents():
-    """Get information about available agents."""
+@app.route('/api/memory', methods=['GET'])
+def get_memory():
+    """Get detailed memory information."""
     try:
-        orchestrator = get_orchestrator_for_session()
-        if not orchestrator:
+        agent = get_orchestrator_for_session()
+        if not agent:
             return jsonify({
                 'success': False,
                 'error': 'No active session'
             }), 404
         
-        agents_info = orchestrator.get_available_agents()
+        memory_summary = agent.get_memory_summary()
+        
         return jsonify({
             'success': True,
-            'agents': agents_info
+            'memory': memory_summary
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Error retrieving memory: {str(e)}'
+        }), 500
+
+
+@app.route('/api/memory/export', methods=['POST'])
+def export_memory():
+    """Export memory to file."""
+    try:
+        agent = get_orchestrator_for_session()
+        if not agent:
+            return jsonify({
+                'success': False,
+                'error': 'No active session'
+            }), 404
+        
+        session_id = session.get('session_id', 'unknown')
+        filename = f"memory_export_{session_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        
+        agent.export_memory(filename)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Memory exported to {filename}',
+            'filename': filename
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Error exporting memory: {str(e)}'
+        }), 500
+
+
+@app.route('/api/agents', methods=['GET'])
+def get_agents():
+    """Get information about available agents."""
+    try:
+        return jsonify({
+            'success': True,
+            'agents': [{
+                'name': 'Hybrid Medical Ontology Agent',
+                'type': 'hybrid',
+                'description': 'SQL agent chained with General agent for verified responses with conversation memory',
+                'architecture': 'SQL Agent → General Agent → Memory Storage',
+                'capabilities': [
+                    'Medical ontology SQL query generation',
+                    'Response verification and refinement',
+                    'LOINC and SNOMED code search',
+                    'Hierarchical relationship queries',
+                    'Clinical indication analysis',
+                    'Conversation memory and context',
+                    'Multi-turn contextual queries'
+                ],
+                'features': [
+                    'POML-enhanced SQL generation',
+                    'General agent response verification',
+                    'Persistent conversation memory',
+                    'Context-aware follow-up questions',
+                    'Memory export capability'
+                ]
+            }]
         })
     
     except Exception as e:
@@ -219,8 +319,8 @@ if __name__ == '__main__':
     # Validate required environment variables
     # SQL_USERNAME and SQL_PASSWORD are optional (for Azure AD auth)
     required_vars = [
-        'SQL_SERVER',
-        'SQL_DATABASE',
+        'MEDDATA_SQL_SERVER',
+        'MEDDATA_SQL_DATABASE',
         'AZURE_OPENAI_ENDPOINT',
         'AZURE_OPENAI_API_KEY',
         'AZURE_OPENAI_DEPLOYMENT'
@@ -245,14 +345,16 @@ if __name__ == '__main__':
         exit(1)
     
     print("=" * 60)
-    print("Multi-Agent SQL Demo - Web Application")
-    print("Powered by Microsoft Agent Framework")
+    print("Medical Ontology Query System")
+    print("Powered by Hybrid Agent Architecture + POML")
     print("=" * 60)
-    print(f"SQL Server: {os.getenv('SQL_SERVER')}")
-    print(f"SQL Database: {os.getenv('SQL_DATABASE')}")
+    print(f"SQL Server: {os.getenv('MEDDATA_SQL_SERVER')}")
+    print(f"SQL Database: {os.getenv('MEDDATA_SQL_DATABASE')}")
     print(f"Authentication: {'Azure AD' if auth_type == 'azure_ad' else 'SQL Authentication'}")
-    print(f"Multi-Agent System: SQL Agent + General Agent")
+    print(f"Knowledge Base: Medical Ontology (Slot-Based Structure)")
     print(f"Azure OpenAI Deployment: {os.getenv('AZURE_OPENAI_DEPLOYMENT')}")
+    print(f"Prompt Framework: POML (Prompt Optimization Markup Language)")
+    print(f"Agent Architecture: SQL Agent → General Agent → Memory")
     print("=" * 60)
     print("\nStarting Flask application...")
     print("Access the application at: http://localhost:5002")

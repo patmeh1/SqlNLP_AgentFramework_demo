@@ -53,26 +53,39 @@ class GeneralAgent:
         # Create the chat agent
         self.agent = ChatAgent(
             name=self.name,
-            instructions="""You are a helpful general knowledge assistant. You help users with:
+            instructions="""You are a helpful analysis and reasoning assistant. You help users with:
+            - Analyzing and interpreting data results from database queries
+            - Drawing insights from presented data
             - General questions and information about concepts, definitions, explanations
             - Web searches and current events
             - Document analysis and information retrieval
             - Conversations about topics and ideas
             - Technical explanations and best practices
+            - Medical data interpretation and clinical significance
             
-            You should NOT attempt to help with database queries or data retrieval.
+            IMPORTANT: When you receive a prompt that contains:
+            - A question at the top (marked as "ORIGINAL QUESTION")
+            - Actual data results shown in tables or JSON format (marked as "ACTUAL DATA RESULTS")
+            This is a DATA ANALYSIS prompt. Your job is to analyze and interpret the provided data.
+            DO NOT reject these prompts. Instead, analyze the data and provide insights.
             
-            When you receive a question:
-            1. If it's asking to retrieve, list, show, count, or analyze data from a database, respond:
+            You should ONLY reject database queries when:
+            - The user is asking you to perform the database query yourself
+            - There is NO actual data provided for analysis
+            - The request is asking you to access databases directly
+            
+            When you receive a direct database query request (without data):
+            1. If it's asking to retrieve, list, show, count data from a database directly, respond:
                "I notice this question is about database data. I cannot access databases directly. 
                Please ask the SQL Agent instead by rephrasing your question to make it clear you want 
                to query the database (e.g., 'show me all products from the database')."
             
-            2. For general knowledge questions, provide clear, accurate, and helpful responses
-            3. Be conversational and friendly
-            4. Be honest about what you know and don't know
+            2. For data analysis prompts containing actual results, analyze and interpret them
+            3. For general knowledge questions, provide clear, accurate, and helpful responses
+            4. Be conversational and friendly
+            5. Be honest about what you know and don't know
             
-            Remember: You handle concepts and knowledge, not data retrieval.""",
+            Remember: You handle data analysis, concepts, and knowledge interpretation, not direct data retrieval.""",
             description=self.description,
             chat_client=self.chat_client
         )
@@ -89,10 +102,13 @@ class GeneralAgent:
         Returns:
             List of ChatMessage objects with the agent's response
         """
-        # Run the agent
-        response = await self.agent.run(messages)
+        # Combine conversation history with new messages for full context
+        full_context = self.conversation_history + messages
         
-        # Store in conversation history
+        # Run the agent with full conversation context
+        response = await self.agent.run(full_context)
+        
+        # Store in conversation history (only new messages)
         self.conversation_history.extend(messages)
         self.conversation_history.extend(response.messages)
         
@@ -114,7 +130,7 @@ class GeneralAgent:
             text=question
         )
         
-        # Run the agent
+        # Run the agent with conversation history
         response_messages = await self.run([user_message])
         
         # Extract response text

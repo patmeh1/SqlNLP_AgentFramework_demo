@@ -172,6 +172,8 @@ Guidelines:
 - If the question is ambiguous, make reasonable assumptions
 - Only generate SELECT queries for safety (no INSERT, UPDATE, DELETE)
 - Return your response as JSON with two fields: "sql" (the query) and "explanation" (brief explanation of what the query does)
+- **IMPORTANT**: Consider the conversation history to understand context and references to previous queries
+- If the user refers to "those", "them", "it", "that", etc., look at the conversation history to understand what they're referring to
 
 Example response format:
 {{
@@ -181,12 +183,20 @@ Example response format:
 """
         
         try:
+            # Build messages with conversation history for context
+            messages = [{"role": "system", "content": system_message}]
+            
+            # Add recent conversation history (last 3 exchanges for context)
+            for entry in self.conversation_history[-3:]:
+                messages.append({"role": "user", "content": entry['question']})
+                messages.append({"role": "assistant", "content": f"SQL: {entry['sql']}\n{entry['response']}"})
+            
+            # Add current question
+            messages.append({"role": "user", "content": user_question})
+            
             response = self.client.chat.completions.create(
                 model=self.deployment,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": user_question}
-                ],
+                messages=messages,
                 temperature=0.1,
                 max_tokens=1000,
                 response_format={"type": "json_object"}
@@ -281,17 +291,25 @@ Example response format:
         
         system_message = """You are a helpful assistant that explains database query results in natural language.
 Given a user's question, the SQL query that was executed, and the results, provide a clear, concise answer in natural language.
-Focus on answering the user's original question directly."""
+Focus on answering the user's original question directly.
+Consider the conversation history to provide contextual responses."""
+        
+        # Build conversation context
+        context = ""
+        if self.conversation_history:
+            context = "\n\nRecent conversation context:\n"
+            for entry in self.conversation_history[-2:]:  # Last 2 exchanges
+                context += f"Q: {entry['question']}\nA: {entry['response'][:200]}...\n\n"
         
         user_message = f"""User Question: {user_question}
-
+{context}
 SQL Query Executed:
 {sql_query}
 
 Query Results:
 {results_text}
 
-Please provide a natural language answer to the user's question based on these results."""
+Please provide a natural language answer to the user's question based on these results. If the user is asking a follow-up question, acknowledge the previous context."""
         
         try:
             response = self.client.chat.completions.create(

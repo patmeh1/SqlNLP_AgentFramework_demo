@@ -208,6 +208,36 @@ Database schema information:
                 result['agent_used'] = 'SQL Agent'
                 result['agent_type'] = 'sql'
                 
+                # If SQL Agent fails, pass to General Agent for helpful explanation
+                if not result.get('success', False) and result.get('error'):
+                    print(f"⚠️  SQL Agent encountered error, routing to General Agent for explanation")
+                    
+                    error_str = result.get('error', 'Unknown error')
+                    sql_query = result.get('sql', 'No query generated')
+                    
+                    error_context = f"""The user asked a database question: "{user_question}"
+
+The SQL Agent attempted to generate and execute a query on the Northwind database but encountered a SQL Server error:
+
+ERROR MESSAGE:
+{error_str}
+
+SQL QUERY ATTEMPTED:
+{sql_query}
+
+HELP THE USER:
+1. Explain the error in simple, non-technical terms
+2. Identify the root cause (syntax error, semantic error, data issue, etc.)
+3. Suggest how they could rephrase their question
+4. Provide 1-2 alternative question examples
+5. Be supportive and helpful"""
+                    
+                    general_result = await self.general_agent.process_query(error_context)
+                    result['response'] = general_result.get('response', result.get('response', ''))
+                    result['agent_used'] = 'SQL Agent -> General Agent (Error Recovery)'
+                    result['original_error'] = result.get('error')
+                    result['helpful_explanation'] = general_result.get('response', '')
+                
             else:  # AgentType.GENERAL
                 print(f"🌐 Routing to General Agent")
                 result = await self.general_agent.process_query(user_question)

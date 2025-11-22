@@ -6,9 +6,19 @@ A sophisticated demo application powered by the **Microsoft Agent Framework** an
 
 ## 🎯 Features
 
+### ✨ NEW: Professional Response Formatting (Nov 22, 2025)
+- **Automatic Formatting**: Responses are automatically formatted with professional styling
+- **Section Hierarchy**: Clear H1/H2/H3 heading structure for easy scanning
+- **Styled Tables**: Professional HTML tables with gradient headers and hover effects
+- **Inline Formatting**: Proper bold, italic, and code text styling
+- **Mobile Responsive**: Fully responsive design that works on all devices
+- **Readable Paragraphs**: Proper spacing, line-height, and typography
+- **See [RESPONSE_FORMATTING_GUIDE.md](RESPONSE_FORMATTING_GUIDE.md) for details**
+
 ### Intelligent Multi-Agent System
 - **Smart Query Routing**: Automatic detection of query intent and routing to the appropriate agent
-- **SQL Agent**: Translates natural language to SQL and queries Azure SQL Database
+- **SQL Agent**: Translates natural language to SQL and queries Azure SQL Database (Northwind)
+- **MedData Agent**: Specialized agent for medical database queries (LOINC, SNOMED codes, etc.) - *Optional*
 - **General Agent**: Handles general questions, web searches, and conversations
 - **Context Awareness**: Maintains conversation history across different query types
 
@@ -19,6 +29,13 @@ A sophisticated demo application powered by the **Microsoft Agent Framework** an
 - **Safe Queries**: Read-only queries to protect your data
 - **Query Explanations**: Understand what SQL is being executed
 
+### MedData Agent Capabilities (Optional)
+- **Medical Code Queries**: Search and retrieve medical codes and their properties
+- **Slot Information**: Query LOINC codes, SNOMED codes, EPIC component IDs
+- **Medical Terminology**: Access medical test and procedure information
+- **Semantic Relationships**: Explore relationships between medical codes
+- **See [MEDDATA_AGENT_INTEGRATION.md](MEDDATA_AGENT_INTEGRATION.md) for setup instructions**
+
 ### General Agent Capabilities
 - **General Knowledge**: Ask about any topic, not just database-related
 - **Conversations**: Have natural conversations with the AI
@@ -28,8 +45,10 @@ A sophisticated demo application powered by the **Microsoft Agent Framework** an
 ### User Interface
 - **Beautiful Chat Interface**: Modern web UI with conversation history
 - **Agent Transparency**: See which agent handled each query
-- **Mixed Query Support**: Seamlessly switch between SQL and general queries
+- **Mixed Query Support**: Seamlessly switch between SQL, medical, and general queries
 - **Session Management**: Conversation history per session
+- **Collapsible SQL Details**: SQL queries and data tables hidden by default, expandable on demand
+- **Professional Styling**: Gradient headers, proper spacing, print-friendly design
 
 ## 🏗️ Architecture
 
@@ -38,12 +57,19 @@ User Question
      ↓
 Multi-Agent Orchestrator (Planner/Router)
      ↓
-   ┌─┴─┐
-   ↓   ↓
-SQL Agent    General Agent
-   ↓              ↓
-Database      AI Response
+   ┌─┴──┬────┐
+   ↓    ↓    ↓
+SQL   MedData  General
+Agent Agent    Agent
+   ↓     ↓      ↓
+Northwind Medical AI
+Database Database Response
 ```
+
+The system now supports **three specialized agents** that can be intelligently routed based on query content:
+- **SQL Agent**: Business data (Northwind database)
+- **MedData Agent**: Medical data (LOINC, SNOMED codes) - *Optional, see [MEDDATA_AGENT_INTEGRATION.md](MEDDATA_AGENT_INTEGRATION.md)*
+- **General Agent**: General knowledge and explanations
 
 **See [MULTI_AGENT_ARCHITECTURE.md](MULTI_AGENT_ARCHITECTURE.md) for detailed architecture documentation.**
 
