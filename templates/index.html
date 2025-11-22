@@ -26,11 +26,132 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
             height: 90vh;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .execution-panel {
+            width: 320px;
+            background: #f5f5f5;
+            border-left: 1px solid #ddd;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+        }
+
+        .execution-header {
+            padding: 15px;
+            background: #333;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .execution-steps {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .execution-step {
+            margin-bottom: 12px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #ddd;
+            font-size: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .execution-step.active {
+            border-left-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .execution-step.success {
+            border-left-color: #4caf50;
+            background: #f1f8e9;
+        }
+
+        .execution-step.error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+
+        .execution-step.retry {
+            border-left-color: #ff9800;
+            background: #fff3e0;
+        }
+
+        .step-icon {
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .step-content {
+            display: inline-block;
+            color: #333;
+            word-break: break-word;
+        }
+
+        .step-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .step-output {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #555;
+            font-family: 'Courier New', monospace;
+            max-height: 80px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+        }
+
+        .execution-clear-btn {
+            padding: 10px;
+            margin: 10px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #333;
+            transition: background 0.2s;
+        }
+
+        .execution-clear-btn:hover {
+            background: #d0d0d0;
         }
 
         .header {
@@ -38,6 +159,7 @@
             color: white;
             padding: 25px 30px;
             border-radius: 20px 20px 0 0;
+            flex-shrink: 0;
         }
 
         .header h1 {
@@ -69,6 +191,16 @@
             overflow-y: auto;
             padding: 30px;
             background: #f8f9fa;
+        }
+
+        .input-container {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0;
         }
 
         .message {
@@ -406,51 +538,63 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🏥 Medical Data Query System - Natural Language Interface</h1>
-            <p>Ask questions about medical data in plain English - the system automatically routes to the right agents</p>
-            <div class="memory-indicator">🧠 Intelligent routing enabled • Conversation memory enabled • Follow-up questions supported</div>
-        </div>
+        <div class="main-content">
+            <div class="header">
+                <h1>🏥 Medical Data Query System - Natural Language Interface</h1>
+                <p>Ask questions about medical data in plain English - the system automatically routes to the right agents</p>
+                <div class="memory-indicator">🧠 Intelligent routing enabled • Conversation memory enabled • Follow-up questions supported</div>
+            </div>
 
-        <div class="chat-container" id="chatContainer">
-            <div class="sample-questions">
-                <h3>📌 Try these medical queries (like real users will ask):</h3>
-                <ul>
-                    <li onclick="askQuestion('Can you provide a list of all Pt-Problems (patient problems) by name for all Tests that have LOINC code 2947-0, and also provide the SNOMED code for each of those patient problems?')">
-                        • <strong>Complex:</strong> Pt-Problems for LOINC 2947-0 with SNOMED codes
-                    </li>
-                    <li onclick="askQuestion('What LOINC codes are available in the database? Show me a few examples.')">
-                        • <strong>Data Retrieval:</strong> Available LOINC codes
-                    </li>
-                    <li onclick="askQuestion('What patient problems are indicated by tests with LOINC code 2947-0?')">
-                        • <strong>Relationship:</strong> Patient problems for LOINC code
-                    </li>
-                </ul>
-                
-                <h3 style="margin-top: 15px;">💡 More Examples:</h3>
-                <ul>
-                    <li onclick="askQuestion('For patient problems 19928 and 3668, what are their SNOMED codes and names?')">
-                        • <strong>Lookup:</strong> SNOMED codes for patient problems
-                    </li>
-                    <li onclick="askQuestion('What does LOINC code 2947-0 represent?')">
-                        • <strong>Knowledge:</strong> LOINC code meaning
-                    </li>
-                    <li onclick="askQuestion('How many tests have LOINC code 2947-0?')">
-                        • <strong>Aggregation:</strong> Count tests by LOINC code
-                    </li>
-                </ul>
-                
-                <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-size: 13px; color: #1565c0;">
-                    <strong>ℹ️ How it works:</strong> Just ask your question naturally. The system automatically analyzes your query 
-                    and routes it to the most appropriate agents. No need to specify which agent to use!
+            <div class="chat-container" id="chatContainer">
+                <div class="sample-questions">
+                    <h3>📌 Try these medical queries (like real users will ask):</h3>
+                    <ul>
+                        <li onclick="askQuestion('Can you provide a list of all Pt-Problems (patient problems) by name for all Tests that have LOINC code 2947-0, and also provide the SNOMED code for each of those patient problems?')">
+                            • <strong>Complex:</strong> Pt-Problems for LOINC 2947-0 with SNOMED codes
+                        </li>
+                        <li onclick="askQuestion('What LOINC codes are available in the database? Show me a few examples.')">
+                            • <strong>Data Retrieval:</strong> Available LOINC codes
+                        </li>
+                        <li onclick="askQuestion('What patient problems are indicated by tests with LOINC code 2947-0?')">
+                            • <strong>Relationship:</strong> Patient problems for LOINC code
+                        </li>
+                    </ul>
+                    
+                    <h3 style="margin-top: 15px;">💡 More Examples:</h3>
+                    <ul>
+                        <li onclick="askQuestion('For patient problems 19928 and 3668, what are their SNOMED codes and names?')">
+                            • <strong>Lookup:</strong> SNOMED codes for patient problems
+                        </li>
+                        <li onclick="askQuestion('What does LOINC code 2947-0 represent?')">
+                            • <strong>Knowledge:</strong> LOINC code meaning
+                        </li>
+                        <li onclick="askQuestion('How many tests have LOINC code 2947-0?')">
+                            • <strong>Aggregation:</strong> Count tests by LOINC code
+                        </li>
+                    </ul>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-size: 13px; color: #1565c0;">
+                        <strong>ℹ️ How it works:</strong> Just ask your question naturally. The system automatically analyzes your query 
+                        and routes it to the most appropriate agents. No need to specify which agent to use!
+                    </div>
                 </div>
+            </div>
+
+            <div class="input-container">
+                <button class="clear-btn" onclick="clearHistory()">Clear History</button>
+                <input type="text" id="userInput" placeholder="Ask a question about the database..." onkeypress="handleKeyPress(event)">
+                <button id="sendBtn" onclick="sendMessage()">Send</button>
             </div>
         </div>
 
-        <div class="input-container">
-            <button class="clear-btn" onclick="clearHistory()">Clear History</button>
-            <input type="text" id="userInput" placeholder="Ask a question about the database..." onkeypress="handleKeyPress(event)">
-            <button id="sendBtn" onclick="sendMessage()">Send</button>
+        <div class="execution-panel">
+            <div class="execution-header">⚙️ Execution Steps</div>
+            <div class="execution-steps" id="executionSteps">
+                <div style="padding: 15px; text-align: center; color: #999; font-size: 12px;">
+                    Waiting for query...
+                </div>
+            </div>
+            <button class="execution-clear-btn" onclick="clearExecutionSteps()">Clear Steps</button>
         </div>
     </div>
 
@@ -517,9 +661,70 @@
             content.classList.toggle('visible');
         }
 
+        // Execution tracking functions
+        const executionPanel = document.getElementById('executionSteps');
+        let stepCounter = 0;
+
+        function addExecutionStep(message, type = 'info', output = '') {
+            stepCounter++;
+            const stepDiv = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+
+            let icon = '◎';
+            if (type === 'success') icon = '✓';
+            else if (type === 'error') icon = '✕';
+            else if (type === 'retry') icon = '↻';
+            else if (type === 'active') icon = '⟳';
+
+            stepDiv.className = `execution-step ${type}`;
+            stepDiv.innerHTML = `
+                <div>
+                    <span class="step-icon">${icon}</span>
+                    <span class="step-content">${message}</span>
+                </div>
+                <div class="step-time">${timestamp}</div>
+                ${output ? `<div class="step-output">${escapeHtml(output)}</div>` : ''}
+            `;
+
+            // Clear "Waiting for query" message if it exists
+            if (executionPanel.children[0].textContent.includes('Waiting for query')) {
+                executionPanel.innerHTML = '';
+            }
+
+            executionPanel.appendChild(stepDiv);
+            executionPanel.scrollTop = executionPanel.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function clearExecutionSteps() {
+            stepCounter = 0;
+            executionPanel.innerHTML = `
+                <div style="padding: 15px; text-align: center; color: #999; font-size: 12px;">
+                    Waiting for query...
+                </div>
+            `;
+        }
+
         async function sendMessage() {
             const question = userInput.value.trim();
             if (!question) return;
+
+            // Clear previous execution steps
+            clearExecutionSteps();
 
             // Disable input
             userInput.disabled = true;
@@ -528,9 +733,12 @@
 
             // Add user message
             addMessage(question, true);
+            addExecutionStep('User query received', 'info', question);
             userInput.value = '';
 
             try {
+                addExecutionStep('Analyzing query and determining routing...', 'active');
+                
                 const response = await fetch('/api/query', {
                     method: 'POST',
                     headers: {
@@ -542,6 +750,33 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    // Add routing info
+                    if (data.auto_routing) {
+                        const primaryAgent = data.agents_involved?.primary || 'System';
+                        const secondaryAgent = data.agents_involved?.secondary;
+                        const complexity = data.query_complexity || 'standard';
+                        addExecutionStep(`Routing to: ${primaryAgent}${secondaryAgent ? ' → ' + secondaryAgent : ''}`, 'success', `Complexity: ${complexity}, Confidence: ${Math.round((data.routing_confidence || 0) * 100)}%`);
+                    }
+
+                    // Add agent execution info
+                    if (data.agent_chain) {
+                        addExecutionStep(`Agent chain executing: ${data.agent_chain}`, 'active');
+                    }
+
+                    // Add SQL execution info if applicable
+                    if (data.sql) {
+                        addExecutionStep('Executing SQL query', 'active', data.sql.substring(0, 150) + (data.sql.length > 150 ? '...' : ''));
+                    }
+
+                    // Add results info
+                    if (data.results && data.results.length > 0) {
+                        addExecutionStep(`Retrieved ${data.results.length} result(s)`, 'success', `Columns: ${data.columns ? data.columns.join(', ') : 'N/A'}`);
+                    }
+
+                    // Processing response
+                    addExecutionStep('Processing and formatting response', 'active');
+                    addExecutionStep('Response complete', 'success');
+
                     // Create agent badge based on routing
                     let agentBadge = '';
                     
@@ -570,6 +805,7 @@
                             <span style="background: #9c27b0; color: white; padding: 3px 8px; border-radius: 10px;">Confidence: ${confidence}%</span>
                         </div>`;
                     } else if (data.agent_used && data.agent_used.includes('Error Recovery')) {
+                        addExecutionStep('Error recovery activated', 'retry', data.original_error);
                         agentBadge = '<span style="background: #ff9800; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; margin-left: 10px;">🔄 Error Recovery</span>';
                     } else if (data.agent_type === 'sql') {
                         agentBadge = '<span style="background: #4caf50; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; margin-left: 10px;">📊 SQL Agent</span>';
