@@ -53,11 +53,10 @@ def check_sql_user(server, database):
 if __name__ == "__main__":
     server = "nyp-sql-1762356746.database.windows.net"
     
-    print("\n🔍 Checking Azure AD Authentication for SQL Databases\n")
+    print("\n🔍 Checking Azure AD Authentication for MedData Database\n")
     print(f"Azure CLI User: admin@MngEnvMCAP737206.onmicrosoft.com")
     print(f"Tenant: Contoso (MngEnvMCAP737206.onmicrosoft.com)")
     print(f"Subscription: ME-MngEnvMCAP737206-patmehta-1\n")
     
-    # Check both databases
-    check_sql_user(server, "Northwind")
+    # Check MedData database
     check_sql_user(server, "MedData")

@@ -6,35 +6,32 @@ A sophisticated demo application powered by the **Microsoft Agent Framework** an
 
 ## 🎯 Features
 
-### ✨ NEW: Professional Response Formatting (Nov 22, 2025)
-- **Automatic Formatting**: Responses are automatically formatted with professional styling
-- **Section Hierarchy**: Clear H1/H2/H3 heading structure for easy scanning
-- **Styled Tables**: Professional HTML tables with gradient headers and hover effects
-- **Inline Formatting**: Proper bold, italic, and code text styling
-- **Mobile Responsive**: Fully responsive design that works on all devices
-- **Readable Paragraphs**: Proper spacing, line-height, and typography
-- **See [RESPONSE_FORMATTING_GUIDE.md](RESPONSE_FORMATTING_GUIDE.md) for details**
+### ✨ Medical Ontology Intelligence
+- **MedData Agent**: Specialized for medical code queries (LOINC, SNOMED, medical terminology)
+- **Smart Query Routing**: Automatic detection of medical query intent
+- **General Agent**: Medical knowledge and explanations
+- **Context Awareness**: Maintains conversation history across queries
+- **Professional Formatting**: Beautiful, readable responses with medical data
 
 ### Intelligent Multi-Agent System
 - **Smart Query Routing**: Automatic detection of query intent and routing to the appropriate agent
-- **SQL Agent**: Translates natural language to SQL and queries Azure SQL Database (Northwind)
-- **MedData Agent**: Specialized agent for medical database queries (LOINC, SNOMED codes, etc.) - *Optional*
-- **General Agent**: Handles general questions, web searches, and conversations
-- **Context Awareness**: Maintains conversation history across different query types
+- **MedData Agent**: Translates natural language to SQL and queries medical ontology data
+- **General Agent**: Handles medical knowledge questions and conversations
+- **Context Awareness**: Maintains conversation history for medical discussions
 
 ### SQL Agent Capabilities
-- **Natural Language Queries**: Ask questions about your database in plain English
-- **Intelligent SQL Generation**: GPT-4o automatically generates optimized SQL queries
-- **Real-time Results**: View query results in an interactive, formatted table
-- **Safe Queries**: Read-only queries to protect your data
-- **Query Explanations**: Understand what SQL is being executed
+- **Natural Language Queries**: Ask questions about medical ontology in plain English
+- **Intelligent SQL Generation**: GPT-4o automatically generates optimized queries
+- **Real-time Results**: View medical codes and terminology in interactive tables
+- **Safe Queries**: Read-only access to medical database
+- **Query Explanations**: Understand the SQL being executed
 
-### MedData Agent Capabilities (Optional)
-- **Medical Code Queries**: Search and retrieve medical codes and their properties
-- **Slot Information**: Query LOINC codes, SNOMED codes, EPIC component IDs
-- **Medical Terminology**: Access medical test and procedure information
+### MedData Agent Capabilities
+- **Medical Code Queries**: Search LOINC, SNOMED, and other medical ontology data
+- **Medical Terminology**: Access standardized medical codes and their properties
 - **Semantic Relationships**: Explore relationships between medical codes
-- **See [MEDDATA_AGENT_INTEGRATION.md](MEDDATA_AGENT_INTEGRATION.md) for setup instructions**
+- **Comprehensive Lookup**: Query complete medical ontology databases
+- **Safe Access**: Read-only queries to medical reference data
 
 ### General Agent Capabilities
 - **General Knowledge**: Ask about any topic, not just database-related
@@ -53,23 +50,23 @@ A sophisticated demo application powered by the **Microsoft Agent Framework** an
 ## 🏗️ Architecture
 
 ```
-User Question
+User Question (Medical Query)
      ↓
-Multi-Agent Orchestrator (Planner/Router)
+Multi-Agent Orchestrator (Smart Router)
      ↓
    ┌─┴──┬────┐
    ↓    ↓    ↓
-SQL   MedData  General
-Agent Agent    Agent
+Medical  General  Query
+Agent    Agent    Analyzer
    ↓     ↓      ↓
-Northwind Medical AI
-Database Database Response
+MedData  AI    Response
+Database Knowledge
 ```
 
-The system now supports **three specialized agents** that can be intelligently routed based on query content:
-- **SQL Agent**: Business data (Northwind database)
-- **MedData Agent**: Medical data (LOINC, SNOMED codes) - *Optional, see [MEDDATA_AGENT_INTEGRATION.md](MEDDATA_AGENT_INTEGRATION.md)*
-- **General Agent**: General knowledge and explanations
+The system uses **specialized agents** intelligently routed based on query content:
+- **MedData Agent**: Medical ontology data (LOINC, SNOMED codes, medical terminology)
+- **General Agent**: Medical knowledge, explanations, and general queries
+- **Smart Router**: Analyzes queries and selects the optimal agent
 
 **See [MULTI_AGENT_ARCHITECTURE.md](MULTI_AGENT_ARCHITECTURE.md) for detailed architecture documentation.**
 
@@ -105,7 +102,7 @@ Download and install from [Microsoft's website](https://learn.microsoft.com/en-u
 ### 1. Clone or Navigate to the Demo Directory
 
 ```bash
-cd sql-agent-demo
+cd MedData-SqlAgent-Demo
 ```
 
 ### 2. Set Up Azure Resources
@@ -119,7 +116,7 @@ cd scripts
 ```
 
 This script will:
-- Create an Azure Resource Group: `NYP_sql_agent`
+- Create an Azure Resource Group: `MedData_sql_agent`
 - Deploy an Azure SQL Server and Database
 - Set up firewall rules
 - Configure storage and key vault
@@ -127,19 +124,19 @@ This script will:
 
 **Important:** You'll be prompted to enter a SQL admin password. Make it strong!
 
-### 3. Load the Northwind Database
+### 3. Load the MedData Database
 
-After the Azure resources are created, load the sample data:
+After the Azure resources are created, load the medical ontology data:
 
 **Option A: Using sqlcmd (recommended)**
 ```bash
 cd ..
-sqlcmd -S <your-server-name>.database.windows.net -d Northwind -U sqladmin -P '<your-password>' -i database/northwind.sql
+sqlcmd -S <your-server-name>.database.windows.net -d MedData -U sqladmin -P '<your-password>' -i database/meddata.sql
 ```
 
 **Option B: Using Azure Data Studio or SQL Server Management Studio**
 1. Connect to your Azure SQL Database
-2. Open `database/northwind.sql`
+2. Open `database/meddata.sql`
 3. Execute the script
 
 ### 4. Set Up Azure AI Foundry Project
@@ -211,28 +208,28 @@ The application will start on `http://localhost:5001` with the multi-agent syste
 
 ### Example Questions
 
-#### SQL Agent Queries (Database)
-- "Show me all products"
-- "What are the top 5 most expensive products?"
-- "How many customers do we have in each country?"
-- "Which employees have the most orders?"
-- "Show me orders from customers in Germany"
-- "What is the total revenue by category?"
-- "List all suppliers from the USA"
-- "Show me products that are discontinued"
+#### MedData Agent Queries (Medical Ontology)
+- "What does LOINC code 2947-0 represent?"
+- "Show me SNOMED codes for diabetes"
+- "What are all the LOINC codes for glucose tests?"
+- "Find medical terminology for cardiovascular conditions"
+- "What procedures are in the medical database?"
+- "Show me lab test codes and their descriptions"
+- "What SNOMED codes are related to hypertension?"
+- "List all available medical codes in each category"
 
-#### General Agent Queries (Non-Database)
-- "What is machine learning?"
-- "Explain the difference between SQL and NoSQL"
-- "Tell me about Microsoft Azure"
-- "What are best practices for API design?"
-- "How does the Northwind database relate to real-world scenarios?"
+#### General Agent Queries (Medical Knowledge)
+- "Explain what LOINC codes are"
+- "What is the difference between LOINC and SNOMED?"
+- "Tell me about medical ontologies"
+- "What are best practices for medical coding?"
+- "How is medical data standardized in healthcare?"
 
 #### Mixed Conversation Example
-1. "Show me all products under $20" *(SQL Agent)*
-2. "What makes a good product pricing strategy?" *(General Agent)*
-3. "How many customers do we have?" *(SQL Agent)*
-4. "What is customer relationship management?" *(General Agent)*
+1. "What LOINC codes are for glucose tests?" *(MedData Agent)*
+2. "Explain what glucose testing means" *(General Agent)*
+3. "Show me SNOMED codes for diabetes" *(MedData Agent)*
+4. "What is the medical significance of diabetes codes?" *(General Agent)*
 
 ## 🤖 Multi-Agent System
 
@@ -279,7 +276,7 @@ MAF_SqlAgent_demo/
 ├── README.md                   # This file
 ├── MULTI_AGENT_ARCHITECTURE.md # Detailed architecture documentation
 ├── database/
-│   └── northwind.sql           # Northwind database schema and data
+│   └── meddata.sql             # MedData medical ontology schema and data
 ├── scripts/
 │   └── setup_azure_resources.sh # Azure infrastructure setup script
 ├── templates/
@@ -293,8 +290,8 @@ MAF_SqlAgent_demo/
 
 | Variable | Description | Example | Required |
 |----------|-------------|---------|----------|
-| `SQL_SERVER` | Azure SQL Server hostname | `nyp-sql-server.database.windows.net` | Yes |
-| `SQL_DATABASE` | Database name | `Northwind` | Yes |
+| `SQL_SERVER` | Azure SQL Server hostname | `meddata-sql-server.database.windows.net` | Yes |
+| `SQL_DATABASE` | Database name | `MedData` | Yes |
 | `SQL_USERNAME` | SQL admin username | `sqladmin` | Optional* |
 | `SQL_PASSWORD` | SQL admin password | `YourPassword123!` | Optional* |
 | `SQL_AUTH_TYPE` | Authentication type | `azure_ad` or `sql` | No (default: azure_ad) |
@@ -547,7 +544,8 @@ For issues or questions:
 - [Azure OpenAI Service Documentation](https://learn.microsoft.com/en-us/azure/ai-services/openai/)
 - [Azure SQL Database Documentation](https://learn.microsoft.com/en-us/azure/azure-sql/)
 - [Flask Documentation](https://flask.palletsprojects.com/)
-- [Northwind Database Reference](https://github.com/Microsoft/sql-server-samples/tree/master/samples/databases/northwind-pubs)
+- [LOINC Database Reference](https://loinc.org/)
+- [SNOMED CT Reference](https://www.snomed.org/)
 
 ---
 

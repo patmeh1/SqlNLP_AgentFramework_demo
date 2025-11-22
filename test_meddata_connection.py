@@ -1,13 +1,11 @@
 """
-Test MedData database connection and verify it uses Azure AD authentication
-similar to the Northwind database.
+Test MedData database connection and verify configuration.
 
 This script:
 1. Checks if MedData is configured
 2. Verifies authentication method (Azure AD vs SQL Auth)
 3. Tests database connection
-4. Executes sample queries
-5. Compares with Northwind configuration
+4. Executes sample medical queries
 """
 
 import os
@@ -20,7 +18,6 @@ load_dotenv()
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sql_agent import SQLAgent
 from agents.create_meddata_agent import is_meddata_configured, create_meddata_agent_from_env
 
 
@@ -31,12 +28,12 @@ def print_section(title):
     print("=" * 70)
 
 
-def test_northwind_config():
-    """Display Northwind database configuration."""
-    print_section("NORTHWIND DATABASE CONFIGURATION")
+def test_meddata_config():
+    """Display MedData database configuration."""
+    print_section("MEDDATA DATABASE CONFIGURATION")
     
     sql_server = os.getenv('SQL_SERVER')
-    sql_database = os.getenv('SQL_DATABASE', 'Northwind')
+    sql_database = os.getenv('SQL_DATABASE', 'MedData')
     sql_username = os.getenv('SQL_USERNAME')
     sql_password = os.getenv('SQL_PASSWORD')
     use_azure_ad_str = os.getenv('USE_AZURE_AD', 'true').lower()
@@ -92,45 +89,34 @@ def test_meddata_config():
     }
 
 
-def compare_configs(northwind_config, meddata_config):
-    """Compare Northwind and MedData configurations."""
-    print_section("CONFIGURATION COMPARISON")
+def verify_meddata_configuration(meddata_config):
+    """Verify MedData configuration details."""
+    print_section("MEDDATA CONFIGURATION")
     
     if not meddata_config:
-        print("⚠️  Cannot compare - MedData not configured")
+        print("⚠️  MedData is not configured")
         return
     
-    print(f"{'Aspect':<20} {'Northwind':<30} {'MedData':<30}")
-    print("-" * 80)
+    print(f"{'Setting':<25} {'Value':<50}")
+    print("-" * 75)
     
     # Server
-    server_match = "✅ Different servers" if northwind_config['server'] != meddata_config['server'] else "⚠️  Same server"
-    print(f"{'Server':<20} {northwind_config['server'] or 'N/A':<30} {meddata_config['server']:<30}")
-    print(f"{'':<20} {server_match}")
-    print()
+    print(f"{'Server':<25} {meddata_config['server']:<50}")
     
     # Database
-    db_match = "✅ Different databases" if northwind_config['database'] != meddata_config['database'] else "⚠️  Same database"
-    print(f"{'Database':<20} {northwind_config['database']:<30} {meddata_config['database']:<30}")
-    print(f"{'':<20} {db_match}")
-    print()
+    print(f"{'Database':<25} {meddata_config['database']:<50}")
     
     # Authentication
-    auth_northwind = "Azure AD" if northwind_config['use_azure_ad'] else "SQL Auth"
-    auth_meddata = "Azure AD" if meddata_config['use_azure_ad'] else "SQL Auth"
-    auth_match = "✅ SAME AUTH METHOD" if northwind_config['use_azure_ad'] == meddata_config['use_azure_ad'] else "⚠️  Different auth methods"
-    print(f"{'Authentication':<20} {auth_northwind:<30} {auth_meddata:<30}")
-    print(f"{'':<20} {auth_match}")
+    auth_method = "Azure AD (Windows Auth)" if meddata_config['use_azure_ad'] else "SQL Authentication"
+    print(f"{'Authentication':<25} {auth_method:<50}")
     
     # Summary
-    print("\n" + "-" * 80)
-    if northwind_config['use_azure_ad'] and meddata_config['use_azure_ad']:
-        print("✅ BOTH databases use Azure AD (Windows Authentication)")
+    print("\n" + "-" * 75)
+    if meddata_config['use_azure_ad']:
+        print("✅ MedData uses Azure AD (Windows Authentication)")
         print("   This provides integrated security without storing passwords")
-    elif not northwind_config['use_azure_ad'] and not meddata_config['use_azure_ad']:
-        print("✅ BOTH databases use SQL Authentication")
     else:
-        print("⚠️  Databases use DIFFERENT authentication methods")
+        print("⚠️  MedData uses SQL Authentication with stored credentials")
 
 
 def test_meddata_connection():
@@ -256,12 +242,11 @@ def main():
     print("║" + " " * 15 + "MEDDATA DATABASE VERIFICATION" + " " * 23 + "║")
     print("╚" + "=" * 68 + "╝")
     
-    # Test 1: Show configurations
-    northwind_config = test_northwind_config()
+    # Test 1: Show configuration
     meddata_config = test_meddata_config()
     
-    # Test 2: Compare configurations
-    compare_configs(northwind_config, meddata_config)
+    # Test 2: Verify configuration
+    verify_meddata_configuration(meddata_config)
     
     # Test 3: Test connection
     if meddata_config:
@@ -276,25 +261,22 @@ def main():
     
     if not meddata_config:
         print("❌ MedData is NOT configured")
-        print("\n📝 To configure MedData with Windows Authentication (like Northwind):")
+        print("\n📝 To configure MedData with Windows Authentication:")
         print("   Add to your .env file:")
         print("   MEDDATA_SQL_SERVER=your-server.database.windows.net")
         print("   MEDDATA_SQL_DATABASE=MedData")
         print("   MEDDATA_USE_AZURE_AD=true")
         print("\n   Then run: python scripts/setup_meddata_database.py")
     else:
-        if northwind_config['use_azure_ad'] and meddata_config['use_azure_ad']:
-            print("✅ MedData uses Azure AD authentication (Windows Authentication)")
-            print("✅ This matches the Northwind database configuration")
-            print("✅ Both databases use integrated security")
-        elif not meddata_config['use_azure_ad']:
-            print("⚠️  MedData uses SQL Authentication")
-            print("   To use Windows Authentication like Northwind, set:")
-            print("   MEDDATA_USE_AZURE_AD=true")
+        print("✅ MedData is configured and ready")
+        if meddata_config['use_azure_ad']:
+            print("✅ Using Azure AD authentication (Windows Authentication)")
+            print("✅ No passwords stored - integrated security enabled")
+        else:
+            print("⚠️  Using SQL Authentication with stored credentials")
         
         print("\n📊 Database Status:")
-        print(f"   Northwind: {northwind_config['database']} on {northwind_config['server'] or 'N/A'}")
-        print(f"   MedData:   {meddata_config['database']} on {meddata_config['server']}")
+        print(f"   MedData: {meddata_config['database']} on {meddata_config['server']}")
     
     print("\n" + "=" * 70)
 

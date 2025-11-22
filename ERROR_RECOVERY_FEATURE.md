@@ -166,16 +166,13 @@ Invalid object name 'widgets'
 ```
 It looks like there's no "widgets" table in the database. 
 
-Available tables in the Northwind database:
-- Products
-- Orders
-- Customers
-- Categories
-- Suppliers
-- Employees
+Available tables in the MedData database:
+- MED_SLOTS
+- MED
+- (Other medical ontology tables)
 
-Did you mean "Products"? If so, try asking:
-"Show me all products"
+Did you mean "MED_SLOTS"? If so, try asking:
+"Show me all medical slots"
 ```
 
 ### Scenario 3: Ambiguous Query

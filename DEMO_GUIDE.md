@@ -43,13 +43,13 @@ User Question (Natural Language)
 ```
 
 **Key Components:**
-- **Azure SQL Database**: Northwind sample (customers, orders, products)
+- **Azure SQL Database**: MedData medical ontology (LOINC codes, SNOMED CT, medical data)
 - **Azure AI Foundry**: GPT-4o deployment
-- **SQL Agent**: Intelligence layer with schema awareness
+- **MedData Agent**: Intelligence layer with medical schema awareness
 - **Web Interface**: User-friendly chat UI
 
 **Talking Points:**
-> "The architecture is straightforward but powerful. When a user asks a question, our agent uses GPT-4o which has been provided with the complete database schema. It generates optimized SQL, executes it safely, and returns both the data and a natural language explanation."
+> "The architecture is straightforward but powerful. When a user asks a medical question, our MedData agent uses GPT-4o which has been provided with the complete medical database schema. It generates optimized SQL, executes it safely, and returns both the data and a natural language explanation of medical codes and terminology."
 
 ### 3. Live Demo - Basic Queries (5 minutes)
 
@@ -57,50 +57,50 @@ User Question (Natural Language)
 
 **Query 1: Simple Selection**
 ```
-User: "Show me all products"
+User: "Show me all medical slots"
 ```
 - Point out the generated SQL
 - Highlight the formatted results table
-- Note the natural language response
+- Note the natural language response explaining medical codes
 
-**Query 2: Filtering**
+**Query 2: LOINC Lookup**
 ```
-User: "What are the top 5 most expensive products?"
+User: "What is LOINC code 2947-0?"
 ```
-- Show how it uses TOP and ORDER BY
-- Emphasize that user didn't need to know SQL syntax
+- Show how it queries the MedData database
+- Emphasize natural language explanation of lab codes
 
-**Query 3: Aggregation**
+**Query 3: SNOMED Code Search**
 ```
-User: "How many customers do we have in each country?"
+User: "Find all SNOMED codes in the database"
 ```
-- Demonstrate GROUP BY generation
-- Show the aggregated results
+- Demonstrate code search and retrieval
+- Show the medical code mappings
 
 ### 4. Advanced Capabilities (5 minutes)
 
 **Demo Script:**
 
-**Query 4: Complex Join**
+**Query 4: Medical Code Analysis**
 ```
-User: "Show me orders from customers in Germany"
+User: "Show me all codes with their slot information"
 ```
-- Highlight the automatic JOIN between tables
-- Explain how the agent understands relationships
+- Highlight the automatic JOIN between MED and MED_SLOTS tables
+- Explain how the agent understands medical data relationships
 
-**Query 5: Business Intelligence**
+**Query 5: Medical Ontology**
 ```
-User: "What is the total revenue by category?"
+User: "What EPIC component IDs are available?"
 ```
-- Show calculation capabilities
-- Demonstrate business logic in natural language
+- Show slot-specific queries
+- Demonstrate medical system integration data
 
-**Query 6: Employee Analysis**
+**Query 6: Code Inventory**
 ```
-User: "Which employees have the most orders?"
+User: "How many unique medical codes are in the system?"
 ```
-- Multiple table joins
-- Aggregation and sorting
+- Count and aggregation capabilities
+- Medical data statistics
 
 ### 5. Key Features Highlight (3 minutes)
 
@@ -262,11 +262,11 @@ Based on customer interest:
 ## 🎨 Customization for Industries
 
 ### Healthcare
-- Modify Northwind to include patient data (anonymized)
+- Update MedData database schema as needed
 - Queries: "Show me appointments this week", "Which doctors have availability?"
 
 ### Retail
-- Keep Northwind as-is (it's retail-focused)
+- Focus on MedData as the primary medical database
 - Queries: "What's our best-selling product?", "Show inventory below reorder level"
 
 ### Finance

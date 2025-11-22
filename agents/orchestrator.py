@@ -215,9 +215,9 @@ Database schema information:
                     error_str = result.get('error', 'Unknown error')
                     sql_query = result.get('sql', 'No query generated')
                     
-                    error_context = f"""The user asked a database question: "{user_question}"
+                    error_context = f"""The user asked a medical database question: "{user_question}"
 
-The SQL Agent attempted to generate and execute a query on the Northwind database but encountered a SQL Server error:
+The MedData SQL Agent attempted to generate and execute a query on the MedData medical ontology database but encountered a SQL Server error:
 
 ERROR MESSAGE:
 {error_str}
@@ -234,7 +234,7 @@ HELP THE USER:
                     
                     general_result = await self.general_agent.process_query(error_context)
                     result['response'] = general_result.get('response', result.get('response', ''))
-                    result['agent_used'] = 'SQL Agent -> General Agent (Error Recovery)'
+                    result['agent_used'] = 'MedData Agent -> General Agent (Error Recovery)'
                     result['original_error'] = result.get('error')
                     result['helpful_explanation'] = general_result.get('response', '')
                 

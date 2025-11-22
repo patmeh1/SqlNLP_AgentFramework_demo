@@ -2,15 +2,14 @@
 
 ## Overview
 
-The **MedData Agent** is a specialized agent for querying the MedData Azure SQL Database, which contains medical slot definitions and code information. It has been integrated into the multi-agent orchestrator alongside the existing SQL Agent (for Northwind business data) and General Agent.
+The **MedData Agent** is a specialized agent for querying the MedData Azure SQL Database, which contains medical slot definitions and code information including LOINC codes, SNOMED CT terminology, and medical ontology data. The system is built around this single specialized medical database agent.
 
 ## Architecture
 
-The system now supports **three specialized agents**:
+The system now supports **two core agents**:
 
-1. **SQL Agent** - Queries Northwind database (products, orders, customers, etc.)
-2. **MedData Agent** - Queries MedData database (medical codes, slots, LOINC, SNOMED, etc.)
-3. **General Agent** - Handles general knowledge questions and web searches
+1. **MedData Agent** - Queries MedData database (medical codes, slots, LOINC, SNOMED, medical ontology, etc.)
+2. **General Agent** - Handles general medical knowledge questions and web searches
 
 The orchestrator intelligently routes queries to the appropriate agent based on keywords and context.
 
@@ -38,19 +37,16 @@ The orchestrator intelligently routes queries to the appropriate agent based on 
 The orchestrator routes queries based on keywords:
 
 **MedData Agent** is triggered by:
-- Medical terms: `medical`, `slot`, `loinc`, `snomed`, `test`, `procedure`, `lab`
-- Specific terms: `sodium`, `measurement`, `cpmc`, `millennium`, `epic`
+- Medical terms: `medical`, `slot`, `loinc`, `snomed`, `test`, `procedure`, `lab`, `diagnosis`, `code`
 - Medical codes and terminology
-
-**SQL Agent** is triggered by:
-- Business terms: `product`, `order`, `customer`, `employee`, `supplier`
-- Data operations: `show`, `list`, `get`, `count`, `top`
-- Northwind-specific tables
+- Health-related questions
+- Database queries about medical ontology
 
 **General Agent** handles:
-- Conceptual questions
-- Definitions and explanations
-- Web searches
+- Conceptual medical knowledge questions
+- Definitions and explanations of medical terms
+- Questions outside the database scope
+- Follow-up and clarification requests
 
 ### 2. Follow-up Context
 
@@ -153,18 +149,18 @@ Then try these queries in the chat interface:
 ✓ "Display medical code 1302"
 ```
 
-### Business Queries (Routes to SQL Agent)
+### Business Queries (Routes to MedData Agent)
 ```
-✓ "Show me all products"
-✓ "List customers in London"
-✓ "What are the top 5 selling products?"
-✓ "How many orders do we have?"
+✓ "Show me all medical slots"
+✓ "List LOINC codes in database"
+✓ "What are the CPMC lab tests?"
+✓ "Find codes with SNOMED mapping"
 ```
 
 ### General Queries (Routes to General Agent)
 ```
 ✓ "What is LOINC?" (explanation, not data)
-✓ "Explain SQL databases"
+✓ "Explain SNOMED CT"
 ✓ "What are best practices for medical coding?"
 ```
 
@@ -256,7 +252,7 @@ fetch('/api/query', {
 ```
 
 ### Agent Types
-- `agent: "sql"` - Force SQL Agent (Northwind)
+- `agent: "meddata"` - Force MedData Agent (Medical database queries)
 - `agent: "meddata"` - Force MedData Agent
 - `agent: "general"` - Force General Agent
 - No agent specified - Automatic routing

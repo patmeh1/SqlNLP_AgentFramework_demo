@@ -59,7 +59,7 @@ graph TB
     end
     
     subgraph "Data Layer"
-        DB[(Azure SQL Database<br/>Northwind)]
+        DB[(Azure SQL Database<br/>MedData)]
         OpenAI[Azure OpenAI<br/>GPT-4o]
     end
     

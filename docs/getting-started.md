@@ -67,9 +67,9 @@ cd ..
 ```
 
 **What this script does:**
-- Creates a resource group (`NYP_sql_agent`)
+- Creates a resource group (`MedData_sql_agent`)
 - Deploys Azure SQL Server
-- Creates Northwind database
+- Creates MedData database
 - Sets up firewall rules
 - Configures Key Vault
 - Generates `.env` file
@@ -90,19 +90,19 @@ az sql server create \
   --admin-password "<strong-password>"
 ```
 
-3. Create database:
+2. Create database:
 ```bash
 az sql db create \
-  --resource-group NYP_sql_agent \
+  --resource-group MedData_sql_agent \
   --server <your-server-name> \
-  --name Northwind \
+  --name MedData \
   --edition Basic
 ```
 
-4. Configure firewall:
+3. Configure firewall:
 ```bash
 az sql server firewall-rule create \
-  --resource-group NYP_sql_agent \
+  --resource-group MedData_sql_agent \
   --server <your-server-name> \
   --name AllowAzure \
   --start-ip-address 0.0.0.0 \
@@ -111,13 +111,13 @@ az sql server firewall-rule create \
 
 ---
 
-## Step 3: Create AI Foundry Project
+### Step 3: Create AI Foundry Project
 
 Since Azure CLI doesn't fully support AI Foundry yet, do this in the Azure Portal:
 
 1. Go to [https://ai.azure.com](https://ai.azure.com)
 2. Click **Create new project**
-3. Enter project name: `NYP_AIFoundry`
+3. Enter project name: `MedData_AIFoundry`
 4. Select the hub created by the script
 5. Click **Create**
 
@@ -126,7 +126,7 @@ Since Azure CLI doesn't fully support AI Foundry yet, do this in the Azure Porta
 1. Go to **Deployments** in your project
 2. Click **+ Create deployment**
 3. Select **GPT-4o** model
-4. Set deployment name to `NYP_demo`
+4. Set deployment name to `MedData_demo`
 5. Configure settings
 6. Click **Create**
 
@@ -145,15 +145,15 @@ Since Azure CLI doesn't fully support AI Foundry yet, do this in the Azure Porta
 
 ```bash
 sqlcmd -S <your-server-name>.database.windows.net \
-  -d Northwind \
+  -d MedData \
   -U sqladmin \
   -P '<your-password>' \
-  -i database/northwind.sql
+  -i database/meddata.sql
 ```
 
 ### Option B: Using Azure Data Studio
 1. Connect to your Azure SQL Database
-2. Open `database/northwind.sql`
+2. Open `database/meddata.sql`
 3. Execute the entire script
 
 ### Option C: Using Python
@@ -176,7 +176,7 @@ cp .env.template .env
 ```
 # Database Configuration
 SQL_SERVER=your-server-name.database.windows.net
-SQL_DATABASE=Northwind
+SQL_DATABASE=MedData
 SQL_USERNAME=sqladmin
 SQL_PASSWORD=your-password-here
 SQL_AUTH_TYPE=sql
@@ -316,7 +316,7 @@ chmod +x scripts/setup_azure_resources.sh
    - [Features & Capabilities](features.html)
 
 3. **Customize for Your Use Case**
-   - Replace Northwind database
+   - Replace MedData database setup
    - Add custom agents
    - Modify UI styling
 
@@ -363,7 +363,7 @@ pip install -r requirements.txt --upgrade
 sqlcmd -S <server>.database.windows.net \
   -U sqladmin \
   -P '<password>' \
-  -d Northwind \
+  -d MedData \
   -Q "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES"
 ```
 
@@ -374,7 +374,7 @@ sqlcmd -S <server>.database.windows.net \
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `SQL_SERVER` | Azure SQL hostname | `myserver.database.windows.net` |
-| `SQL_DATABASE` | Database name | `Northwind` |
+| `SQL_DATABASE` | Database name | `MedData` |
 | `SQL_USERNAME` | Database username | `sqladmin` |
 | `SQL_PASSWORD` | Database password | `SecurePass123!` |
 | `SQL_AUTH_TYPE` | Auth type | `sql` or `azure_ad` |

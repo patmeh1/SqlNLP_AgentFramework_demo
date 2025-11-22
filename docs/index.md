@@ -3,9 +3,9 @@ layout: default
 title: SQL Agent Demo - Intelligent Natural Language Interface
 ---
 
-# 🚀 Multi-Agent SQL Demo
+# 🚀 Medical Ontology SQL Demo
 
-**Intelligent Natural Language Interface to Your Database**
+**Intelligent Natural Language Interface to Medical Data**
 
 Powered by **Microsoft Agent Framework** and **Azure OpenAI GPT-4o**
 
@@ -13,10 +13,10 @@ Powered by **Microsoft Agent Framework** and **Azure OpenAI GPT-4o**
 
 ## ✨ What It Does
 
-Transform your database into a conversational AI. Ask questions in plain English. Get instant answers with perfectly formatted results.
+Transform your medical data into a conversational AI. Ask questions about medical codes and terminology in plain English. Get instant answers with perfectly formatted results.
 
 ```
-User Question
+Medical Question
     ↓
 AI Understanding
     ↓
@@ -24,21 +24,21 @@ SQL Generation
     ↓
 Query Execution
     ↓
-Beautiful Results
+Medical Results
 ```
 
 ---
 
 ## 🎯 Core Capabilities
 
-### 🗣️ **Natural Language Queries**
-- Ask questions in everyday English
-- No SQL knowledge required
-- Complex queries made simple
+### 🗣️ **Medical Code Queries**
+- Ask questions about LOINC, SNOMED, and medical ontology data
+- No medical coding background required
+- Complex medical terminology made simple
 
 ### ⚡ **Intelligent Routing**
-- SQL Agent for database queries
-- General Agent for knowledge questions
+- MedData Agent for medical queries
+- General Agent for medical knowledge
 - Automatic decision-making
 
 ### 📊 **Professional Results**
@@ -114,7 +114,7 @@ Q: "How important is product lifecycle management?"
              ↓
 ┌─────────────────────────┐
 │  Azure SQL Database     │
-│  (Northwind Sample DB)  │
+│  (MedData Medical Ontology)  │
 └─────────────────────────┘
 ```
 

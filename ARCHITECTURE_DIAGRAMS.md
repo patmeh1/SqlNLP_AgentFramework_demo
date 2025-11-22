@@ -54,7 +54,7 @@
 ║  │ Azure OpenAI │            │  Azure SQL   │                ║
 ║  │   (GPT-4o)   │            │   Database   │                ║
 ║  │              │            │              │                ║
-║  │ Deployment:  │            │  Northwind   │                ║
+║  │ Deployment:  │            │  MedData     │                ║
 ║  │  NYP_demo    │            │   Database   │                ║
 ║  └──────────────┘            └──────────────┘                ║
 ║                                                                ║
@@ -123,7 +123,7 @@ User Query: "Show me the top 5 most expensive products"
 ┌─────────────────────────────────────────────────────────┐
 │              Azure SQL Database                          │
 │                                                          │
-│  Executes Query on Northwind Database                   │
+│  Executes Query on MedData Medical Ontology Database     │
 │  ┌────────────────────────────────────────────┐        │
 │  │ ProductName         │ UnitPrice            │        │
 │  │─────────────────────┼──────────────────────│        │
@@ -344,7 +344,7 @@ index.html (Frontend)
 Azure Resources
 ├── Resource Group: NYP_sql_agent
 ├── SQL Server
-│   ├── Database: Northwind
+│   ├── Database: MedData
 │   └── Firewall Rules
 ├── AI Foundry Project: NYP_AIFoundry
 │   └── Deployment: NYP_demo (GPT-4o)

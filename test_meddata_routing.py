@@ -44,7 +44,7 @@ async def test_meddata_routing():
         ("MEDDATA what codes are available?", "Should route to MedData (case insensitive)"),
         ("meddata how many medical codes?", "Should route to MedData (lowercase prefix)"),
         ("Show me all sodium tests", "Should route to MedData (keyword match)"),
-        ("Show me all customers", "Should route to SQL (Northwind data)"),
+        ("Show me all customers", "Should route to General (not a medical query)"),
         ("What is machine learning?", "Should route to General (conceptual)"),
     ]
     
